@@ -18,7 +18,9 @@ use TYPO3Fluid\Fluid\Core\ViewHelper\Exception;
 final class MediaViewHelper extends AbstractTagBasedViewHelper
 {
     protected $tagName = 'img';
+
     protected ImageService $imageService;
+
     protected ResponsiveImagesUtility $responsiveImagesUtility;
 
     public function injectImageService(ImageService $imageService): void
@@ -35,6 +37,7 @@ final class MediaViewHelper extends AbstractTagBasedViewHelper
     {
         parent::initializeArguments();
         $this->registerUniversalTagAttributes();
+
         // phpcs:disable Generic.Files.LineLength
         $this->registerTagAttribute('alt', 'string', 'Specifies an alternate text for an image', false);
         $this->registerArgument('file', 'object', 'File', true);
@@ -126,6 +129,7 @@ final class MediaViewHelper extends AbstractTagBasedViewHelper
                 return $this->renderSimpleImage($file, $width, $height, $this->arguments['fileExtension'] ?? null);
             }
         }
+
         $additionalConfig = array_merge_recursive($this->arguments, $additionalConfig);
         return $fileRenderer->render($file, $width, $height, $additionalConfig);
     }
@@ -143,14 +147,17 @@ final class MediaViewHelper extends AbstractTagBasedViewHelper
         $cropString = $image instanceof FileReference ? $image->getProperty('crop') : '';
         $cropVariantCollection = CropVariantCollection::create((string)$cropString);
         $cropArea = $cropVariantCollection->getCropArea($cropVariant);
+
         $processingInstructions = [
             'width' => $width,
             'height' => $height,
             'crop' => $cropArea->isEmpty() ? null : $cropArea->makeAbsoluteBasedOnFile($image),
         ];
+
         if (!empty($fileExtension)) {
             $processingInstructions['fileExtension'] = $fileExtension;
         }
+
         $processedImage = $this->imageService->applyProcessingInstructions($image, $processingInstructions);
         $imageUri = $this->imageService->getImageUri($processedImage);
 
@@ -160,12 +167,15 @@ final class MediaViewHelper extends AbstractTagBasedViewHelper
                 $this->tag->addAttribute('data-focus-area', $focusArea->makeAbsoluteBasedOnFile($image));
             }
         }
+
         $this->tag->addAttribute('src', $imageUri);
         $this->tag->addAttribute('width', $processedImage->getProperty('width'));
         $this->tag->addAttribute('height', $processedImage->getProperty('height'));
+
         if (in_array($this->arguments['loading'] ?? '', ['lazy', 'eager', 'auto'], true)) {
             $this->tag->addAttribute('loading', $this->arguments['loading']);
         }
+
         if (in_array($this->arguments['decoding'] ?? '', ['sync', 'async', 'auto'], true)) {
             $this->tag->addAttribute('decoding', $this->arguments['decoding']);
         }
@@ -187,18 +197,17 @@ final class MediaViewHelper extends AbstractTagBasedViewHelper
     /**
      * Render picture tag
      *
-     * @param  FileInterface $image
-     * @param  string        $width
-     * @param  string        $height
+     * @param FileInterface $image
+     * @param string $width
+     * @param string $height
      *
-     * @return string                 Rendered picture tag
+     * @return string Rendered picture tag
      */
     protected function renderPicture(FileInterface $image, $width, $height, ?string $fileExtension = null)
     {
         // Get crop variants
         $cropString = $image instanceof FileReference ? $image->getProperty('crop') : '';
         $cropVariantCollection = CropVariantCollection::create((string) $cropString);
-
         $cropVariant = $this->arguments['cropVariant'] ?: 'default';
         $cropArea = $cropVariantCollection->getCropArea($cropVariant);
         $focusArea = $cropVariantCollection->getFocusArea($cropVariant);
@@ -210,6 +219,7 @@ final class MediaViewHelper extends AbstractTagBasedViewHelper
         if (in_array($this->arguments['loading'] ?? '', ['lazy', 'eager', 'auto'], true)) {
             $this->tag->addAttribute('loading', $this->arguments['loading']);
         }
+
         if (in_array($this->arguments['decoding'] ?? '', ['sync', 'async', 'auto'], true)) {
             $this->tag->addAttribute('decoding', $this->arguments['decoding']);
         }
@@ -237,18 +247,17 @@ final class MediaViewHelper extends AbstractTagBasedViewHelper
     /**
      * Render img tag with srcset/sizes attributes
      *
-     * @param  FileInterface $image
-     * @param  string        $width
-     * @param  string        $height
+     * @param FileInterface $image
+     * @param string $width
+     * @param string $height
      *
-     * @return string                 Rendered img tag
+     * @return string Rendered img tag
      */
     protected function renderImageSrcset(FileInterface $image, $width, $height, ?string $fileExtension = null)
     {
         // Get crop variants
         $cropString = $image instanceof FileReference ? $image->getProperty('crop') : '';
         $cropVariantCollection = CropVariantCollection::create((string) $cropString);
-
         $cropVariant = $this->arguments['cropVariant'] ?: 'default';
         $cropArea = $cropVariantCollection->getCropArea($cropVariant);
         $focusArea = $cropVariantCollection->getFocusArea($cropVariant);
@@ -260,6 +269,7 @@ final class MediaViewHelper extends AbstractTagBasedViewHelper
         if (in_array($this->arguments['loading'] ?? '', ['lazy', 'eager', 'auto'], true)) {
             $this->tag->addAttribute('loading', $this->arguments['loading']);
         }
+
         if (in_array($this->arguments['decoding'] ?? '', ['sync', 'async', 'auto'], true)) {
             $this->tag->addAttribute('decoding', $this->arguments['decoding']);
         }
@@ -287,9 +297,9 @@ final class MediaViewHelper extends AbstractTagBasedViewHelper
     /**
      * Generates a fallback image for picture and srcset markup
      *
-     * @param  FileInterface $image
-     * @param  string        $width
-     * @param  Area          $cropArea
+     * @param FileInterface $image
+     * @param string $width
+     * @param Area $cropArea
      *
      * @return FileInterface
      */
@@ -303,22 +313,30 @@ final class MediaViewHelper extends AbstractTagBasedViewHelper
             'width' => $width,
             'crop' => $cropArea->isEmpty() ? null : $cropArea->makeAbsoluteBasedOnFile($image),
         ];
+
         if (!empty($fileExtension)) {
             $processingInstructions['fileExtension'] = $fileExtension;
         }
-        $fallbackImage = $this->imageService->applyProcessingInstructions($image, $processingInstructions);
 
+        $fallbackImage = $this->imageService->applyProcessingInstructions($image, $processingInstructions);
         return $fallbackImage;
     }
 
     protected function isKnownFileExtension($fileExtension): bool
     {
         $fileExtension = (string) $fileExtension;
+
         // Skip if no file extension was specified
         if ($fileExtension === '') {
             return true;
         }
+
         // Check against list of supported extensions
-        return GeneralUtility::inList($GLOBALS['TYPO3_CONF_VARS']['GFX']['imagefile_ext'], $fileExtension);
+        // Note: GeneralUtility::inList() was removed in TYPO3 14.0
+        return in_array(
+            $fileExtension,
+            GeneralUtility::trimExplode(',', $GLOBALS['TYPO3_CONF_VARS']['GFX']['imagefile_ext'], true),
+            true
+        );
     }
 }
