@@ -1,5 +1,5 @@
 <?php
-$EM_CONF['sms_responsive_images'] = [
+$EM_CONF[$_EXTKEY] = [
     'title' => 'SMS Responsive Images',
     'description' => 'Provides ViewHelpers and configuration to render valid responsive images based on TYPO3\'s image cropping tool.',
     'category' => 'fe',
@@ -12,7 +12,7 @@ $EM_CONF['sms_responsive_images'] = [
     'version' => '',
     'constraints' => [
         'depends' => [
-            'typo3' => '10.4.0-13.9.99',
+            'typo3' => '10.4.0-14.99.99',
         ],
         'conflicts' => [
         ],
